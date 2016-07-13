@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<bajadoc version='1.0' createdBy='Niagara Devkit 3.8.41' createdAt='15-Jun-2016' createdOn='VSMOLINSKI0616'>
+<module
+  name='HvacEnergy'
+  bajaVersion='0'
+  vendor='VictorSmolinski'
+  vendorVersion='4.0.0.3'
+>
+<description>hvac energy control algorithms</description>
+</module>
+</bajadoc>

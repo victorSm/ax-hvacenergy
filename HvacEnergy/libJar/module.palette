@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bajaObjectGraph version="1.0">
+<p m="b=baja" t="b:UnrestrictedFolder">
+  <p n="FanPressureReset" m="hve=HvacEnergy" t="hve:FanPressureReset"/>
+  <p n="DemoWorker" m="hve=HvacEnergy" t="hve:DemoWorker"/>
+</p>
+</bajaObjectGraph>

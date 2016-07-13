@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module
+  name = "HvacEnergy"
+  bajaVersion = "0"
+  vendor = "VictorSmolinski"
+  vendorVersion = "4.0.0.3"
+  description = "hvac energy control algorithms"
+  preferredSymbol = "hve"
+  buildDate = "15-Jun-16 07:58 CDT"
+  buildMillis = "1465995488552"
+  buildHost = "null"
+>
+
+<dependencies>
+  <dependency name="baja"/>
+</dependencies>
+
+<dirs>
+  <dir name="com/vitek/tridium/ax" install="runtime"/>
+  <dir name="doc" install="doc"/>
+</dirs>
+
+<types>
+  <type name="FanPressureReset" class="com.vitek.tridium.ax.BFanPressureReset"/>
+  <type name="DemoWorker" class="com.vitek.tridium.ax.BDemoWorker"/>
+</types>
+
+</module>

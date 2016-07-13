@@ -1,0 +1,17 @@
+<!-- Module Build File -->
+
+<module
+  name = "HvacEnergy"
+  bajaVersion = "0"
+  preferredSymbol = "hve"
+  description = "hvac energy control algorithms"
+  vendor = "VictorSmolinski"
+  vendorVersion = "4.0.0.3"
+>
+
+  <!-- Dependencies -->
+  <dependency name="baja" />
+  <!-- Packages -->
+  <package name = "com.vitek.tridium.ax"/>
+
+</module>
