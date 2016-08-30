@@ -6,12 +6,12 @@
   preferredSymbol = "hve"
   description = "hvac energy control algorithms"
   vendor = "VictorSmolinski"
-  vendorVersion = "4.0.0.3"
+  vendorVersion = "4.0.0.90"
 >
 
   <!-- Dependencies -->
   <dependency name="baja" />
   <!-- Packages -->
   <package name = "com.vitek.tridium.ax"/>
-
+  <package name = "com.vitek.tridium.ax.Enums"/>
 </module>

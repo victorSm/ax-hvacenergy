@@ -3,11 +3,11 @@
   name = "HvacEnergy"
   bajaVersion = "0"
   vendor = "VictorSmolinski"
-  vendorVersion = "4.0.0.3"
+  vendorVersion = "4.0.0.90"
   description = "hvac energy control algorithms"
   preferredSymbol = "hve"
-  buildDate = "15-Jun-16 07:58 CDT"
-  buildMillis = "1465995488552"
+  buildDate = "21-Aug-16 14:37 CDT"
+  buildMillis = "1471808245995"
   buildHost = "null"
 >
 
@@ -17,12 +17,16 @@
 
 <dirs>
   <dir name="com/vitek/tridium/ax" install="runtime"/>
+  <dir name="com/vitek/tridium/ax/Enums" install="runtime"/>
   <dir name="doc" install="doc"/>
 </dirs>
 
 <types>
   <type name="FanPressureReset" class="com.vitek.tridium.ax.BFanPressureReset"/>
   <type name="DemoWorker" class="com.vitek.tridium.ax.BDemoWorker"/>
+  <type name="LeadLagControl" class="com.vitek.tridium.ax.BLeadLagControl"/>
+  <type name="LeadLagRotationControl" class="com.vitek.tridium.ax.Enums.BLeadLagRotationControl"/>
+  <type name="LeadLagRotationType" class="com.vitek.tridium.ax.Enums.BLeadLagRotationType"/>
 </types>
 
 </module>

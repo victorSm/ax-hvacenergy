@@ -1,8 +1,11 @@
 package com.vitek.tridium.ax;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.ListIterator;
 
+import javax.baja.naming.BOrd;
 import javax.baja.status.BStatusBoolean;
 import javax.baja.status.BStatusNumeric;
 import javax.baja.sys.*;
@@ -21,71 +24,118 @@ public class BFanPressureReset
    {
      properties
      {
-      active_responseRate: BStatusNumeric
-        default{[ new BStatusNumeric() ]}
-        flags { summary, readonly } 
+     
+      Debug:BBoolean
+        default{[BBoolean.make("false")]}
+      
+      RogueZoneDelay: BRelTime
+        default{[BRelTime.makeHours(1)]}
+        flags{}
+      
+      RoguePercentThreshold: BDouble
+        default{[BDouble.make(100.0)]}
+        flags{}
+        slotfacets{[ BFacets.makeNumeric(BUnit.getUnit("percent"), 0)]}  
+       
+      ExecutionRate:BRelTime
+        default{[BRelTime.makeSeconds(10)]}
+        flags{summary}
+             
+      DefaultSetpoint: BStatusNumeric
+        default{[new BStatusNumeric()]}
+        flags{summary}
         slotfacets {[ BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4)]}
 
-      minStaticPressure_Stp: BStatusNumeric
+      MinStaticPressure_Stp: BStatusNumeric
          default{[new BStatusNumeric() ]}
          flags{ summary }
          slotfacets{[BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4)]}
       
-      maxStaticPressure_Stp: BStatusNumeric
+      MaxStaticPressure_Stp: BStatusNumeric
          default{[ new BStatusNumeric() ]}
          flags{ summary }
          slotfacets{[BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4)]}   
          
-      minResponseRate: BStatusNumeric
+      MinResponseRate: BStatusNumeric
          default {[new BStatusNumeric() ]}
          flags { summary }
          slotfacets {[BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4)]}
          
-      maxResponseRate: BStatusNumeric
+      MaxResponseRate: BStatusNumeric
         default {[new BStatusNumeric()]}
         flags{summary}
         slotfacets{[BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4)]}   
          
-      trimRate: BStatusNumeric
+      TrimRate: BStatusNumeric
          default {[ new BStatusNumeric() ]}
          flags {summary}
          slotfacets{[BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4)]}
-       
-       enable: BStatusBoolean
-         default {[new BStatusBoolean()]}
-         slotfacets {[BFacets.makeBoolean("true", "false")]}
-       
-       fanProof: BStatusBoolean
-         default {[new BStatusBoolean()]}
-         flags{summary}
-         slotfacets {[BFacets.makeBoolean("true", "false")]}
-       
-       zoneRequest: BStatusNumeric
-         default{[new BStatusNumeric()]}
+      
+      ResponseDamperPosition: BStatusNumeric
+        default{[new BStatusNumeric()]}
+        flags{summary}
+        slotfacets{[BFacets.makeNumeric(BUnit.getUnit("percent"), 4)]} 
+      
+      TrimDamperPosition: BStatusNumeric
+        default{[new BStatusNumeric()]}
+        flags{summary}
+        slotfacets{[BFacets.makeNumeric(BUnit.getUnit("percent"), 4)]}
+        
+      RequestsRequiredToRespond:BStatusNumeric
+         default {[ new BStatusNumeric() ]}
          flags {summary}
- 
-         asyncHandler : BDemoWorker
-           default{[new BDemoWorker()]}
-           
-       out:BStatusNumeric
-         default{[new BStatusNumeric()]}
-         flags { summary }  
-         slotfacets {[ BFacets.makeNumeric( BUnit.getUnit("inches of water"), 4)]}                 
-     
+        
+      NoOfZones: BDouble
+        default{[BDouble.make(0.0)]}
+        flags{summary}
+          
+      Enable: BBoolean
+        default{[BBoolean.make("false")]}
+        flags{summary}
+        slotfacets {[BFacets.makeBoolean("true", "false")]}
+
+      UseTrimDeadband: BBoolean
+        default{[BBoolean.make("false")]}
+        flags{summary}
+    
+      FanProof: BStatusBoolean
+        default {[new BStatusBoolean()]}
+        flags{summary}
+        slotfacets {[BFacets.makeBoolean("true", "false")]}
+       
+      ActiveZoneRequests: BStatusNumeric
+        default{[new BStatusNumeric()]}
+        flags {summary}
+      
+      ActiveTrimRequests:BDouble
+        default{[BDouble.make(0)]}
+      
+      ActiveResponseRate: BStatusNumeric
+        default{[ new BStatusNumeric() ]}
+        flags { summary, readonly } 
+        slotfacets {[ BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4)]}
+                      
+      Out:BStatusNumeric
+        default{[new BStatusNumeric()]}
+        flags { summary }  
+        slotfacets {[ BFacets.makeNumeric( BUnit.getUnit("inches of water"), 4)]}                 
+      
+      AsyncHandler : BDemoWorker
+        default{[new BDemoWorker()]}
+        flags{hidden}
      }
      actions
      {
       addZone()
-        flags{ async }
         
       removeZone(name:BString)
         default{[BString.make("zoneName")]}
-        flags{ async}
+        
+      batchZones()  
       
-      loopEnable()
-        flags{ async }
+      enable()
        
-      countRequest() : BStatusNumeric
+      countRequest()
         flags{ async } 
          
       makeList()
@@ -102,265 +152,520 @@ public class BFanPressureReset
      }
      topics
      {
+       RogueZoneEvent: BString
+         flags{}
      }
    }
    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $com.vitek.BFanPressureReset(2825860417)1.0$ @*/
-/* Generated Wed Nov 04 11:36:07 CST 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $com.vitek.tridium.ax.BFanPressureReset(3793271926)1.0$ @*/
+/* Generated Wed Aug 03 14:16:31 CDT 2016 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
-// Property "active_responseRate"
+// Property "Debug"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>active_responseRate</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#getActive_responseRate
-   * @see com.vitek.tridium.ax.BFanPressureReset#setActive_responseRate
+   * Slot for the <code>Debug</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getDebug
+   * @see com.vitek.tridium.ax.BFanPressureReset#setDebug
    */
-  public static final Property active_responseRate = newProperty(Flags.SUMMARY|Flags.READONLY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
+  public static final Property Debug = newProperty(0, ((BBoolean)(BBoolean.make("false"))).getBoolean(),null);
   
   /**
-   * Get the <code>active_responseRate</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#active_responseRate
+   * Get the <code>Debug</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#Debug
    */
-  public BStatusNumeric getActive_responseRate() { return (BStatusNumeric)get(active_responseRate); }
+  public boolean getDebug() { return getBoolean(Debug); }
   
   /**
-   * Set the <code>active_responseRate</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#active_responseRate
+   * Set the <code>Debug</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#Debug
    */
-  public void setActive_responseRate(BStatusNumeric v) { set(active_responseRate,v,null); }
+  public void setDebug(boolean v) { setBoolean(Debug,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "minStaticPressure_Stp"
+// Property "RogueZoneDelay"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>minStaticPressure_Stp</code> property.
+   * Slot for the <code>RogueZoneDelay</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getRogueZoneDelay
+   * @see com.vitek.tridium.ax.BFanPressureReset#setRogueZoneDelay
+   */
+  public static final Property RogueZoneDelay = newProperty(0, BRelTime.makeHours(1),null);
+  
+  /**
+   * Get the <code>RogueZoneDelay</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#RogueZoneDelay
+   */
+  public BRelTime getRogueZoneDelay() { return (BRelTime)get(RogueZoneDelay); }
+  
+  /**
+   * Set the <code>RogueZoneDelay</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#RogueZoneDelay
+   */
+  public void setRogueZoneDelay(BRelTime v) { set(RogueZoneDelay,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "RoguePercentThreshold"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>RoguePercentThreshold</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getRoguePercentThreshold
+   * @see com.vitek.tridium.ax.BFanPressureReset#setRoguePercentThreshold
+   */
+  public static final Property RoguePercentThreshold = newProperty(0, ((BDouble)(BDouble.make(100.0))).getDouble(),BFacets.makeNumeric(BUnit.getUnit("percent"), 0));
+  
+  /**
+   * Get the <code>RoguePercentThreshold</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#RoguePercentThreshold
+   */
+  public double getRoguePercentThreshold() { return getDouble(RoguePercentThreshold); }
+  
+  /**
+   * Set the <code>RoguePercentThreshold</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#RoguePercentThreshold
+   */
+  public void setRoguePercentThreshold(double v) { setDouble(RoguePercentThreshold,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "ExecutionRate"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>ExecutionRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getExecutionRate
+   * @see com.vitek.tridium.ax.BFanPressureReset#setExecutionRate
+   */
+  public static final Property ExecutionRate = newProperty(Flags.SUMMARY, BRelTime.makeSeconds(10),null);
+  
+  /**
+   * Get the <code>ExecutionRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#ExecutionRate
+   */
+  public BRelTime getExecutionRate() { return (BRelTime)get(ExecutionRate); }
+  
+  /**
+   * Set the <code>ExecutionRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#ExecutionRate
+   */
+  public void setExecutionRate(BRelTime v) { set(ExecutionRate,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "DefaultSetpoint"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>DefaultSetpoint</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getDefaultSetpoint
+   * @see com.vitek.tridium.ax.BFanPressureReset#setDefaultSetpoint
+   */
+  public static final Property DefaultSetpoint = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
+  
+  /**
+   * Get the <code>DefaultSetpoint</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#DefaultSetpoint
+   */
+  public BStatusNumeric getDefaultSetpoint() { return (BStatusNumeric)get(DefaultSetpoint); }
+  
+  /**
+   * Set the <code>DefaultSetpoint</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#DefaultSetpoint
+   */
+  public void setDefaultSetpoint(BStatusNumeric v) { set(DefaultSetpoint,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "MinStaticPressure_Stp"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>MinStaticPressure_Stp</code> property.
    * @see com.vitek.tridium.ax.BFanPressureReset#getMinStaticPressure_Stp
    * @see com.vitek.tridium.ax.BFanPressureReset#setMinStaticPressure_Stp
    */
-  public static final Property minStaticPressure_Stp = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
+  public static final Property MinStaticPressure_Stp = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
   
   /**
-   * Get the <code>minStaticPressure_Stp</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#minStaticPressure_Stp
+   * Get the <code>MinStaticPressure_Stp</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#MinStaticPressure_Stp
    */
-  public BStatusNumeric getMinStaticPressure_Stp() { return (BStatusNumeric)get(minStaticPressure_Stp); }
+  public BStatusNumeric getMinStaticPressure_Stp() { return (BStatusNumeric)get(MinStaticPressure_Stp); }
   
   /**
-   * Set the <code>minStaticPressure_Stp</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#minStaticPressure_Stp
+   * Set the <code>MinStaticPressure_Stp</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#MinStaticPressure_Stp
    */
-  public void setMinStaticPressure_Stp(BStatusNumeric v) { set(minStaticPressure_Stp,v,null); }
+  public void setMinStaticPressure_Stp(BStatusNumeric v) { set(MinStaticPressure_Stp,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "maxStaticPressure_Stp"
+// Property "MaxStaticPressure_Stp"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>maxStaticPressure_Stp</code> property.
+   * Slot for the <code>MaxStaticPressure_Stp</code> property.
    * @see com.vitek.tridium.ax.BFanPressureReset#getMaxStaticPressure_Stp
    * @see com.vitek.tridium.ax.BFanPressureReset#setMaxStaticPressure_Stp
    */
-  public static final Property maxStaticPressure_Stp = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
+  public static final Property MaxStaticPressure_Stp = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
   
   /**
-   * Get the <code>maxStaticPressure_Stp</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#maxStaticPressure_Stp
+   * Get the <code>MaxStaticPressure_Stp</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#MaxStaticPressure_Stp
    */
-  public BStatusNumeric getMaxStaticPressure_Stp() { return (BStatusNumeric)get(maxStaticPressure_Stp); }
+  public BStatusNumeric getMaxStaticPressure_Stp() { return (BStatusNumeric)get(MaxStaticPressure_Stp); }
   
   /**
-   * Set the <code>maxStaticPressure_Stp</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#maxStaticPressure_Stp
+   * Set the <code>MaxStaticPressure_Stp</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#MaxStaticPressure_Stp
    */
-  public void setMaxStaticPressure_Stp(BStatusNumeric v) { set(maxStaticPressure_Stp,v,null); }
+  public void setMaxStaticPressure_Stp(BStatusNumeric v) { set(MaxStaticPressure_Stp,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "minResponseRate"
+// Property "MinResponseRate"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>minResponseRate</code> property.
+   * Slot for the <code>MinResponseRate</code> property.
    * @see com.vitek.tridium.ax.BFanPressureReset#getMinResponseRate
    * @see com.vitek.tridium.ax.BFanPressureReset#setMinResponseRate
    */
-  public static final Property minResponseRate = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
+  public static final Property MinResponseRate = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
   
   /**
-   * Get the <code>minResponseRate</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#minResponseRate
+   * Get the <code>MinResponseRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#MinResponseRate
    */
-  public BStatusNumeric getMinResponseRate() { return (BStatusNumeric)get(minResponseRate); }
+  public BStatusNumeric getMinResponseRate() { return (BStatusNumeric)get(MinResponseRate); }
   
   /**
-   * Set the <code>minResponseRate</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#minResponseRate
+   * Set the <code>MinResponseRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#MinResponseRate
    */
-  public void setMinResponseRate(BStatusNumeric v) { set(minResponseRate,v,null); }
+  public void setMinResponseRate(BStatusNumeric v) { set(MinResponseRate,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "maxResponseRate"
+// Property "MaxResponseRate"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>maxResponseRate</code> property.
+   * Slot for the <code>MaxResponseRate</code> property.
    * @see com.vitek.tridium.ax.BFanPressureReset#getMaxResponseRate
    * @see com.vitek.tridium.ax.BFanPressureReset#setMaxResponseRate
    */
-  public static final Property maxResponseRate = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
+  public static final Property MaxResponseRate = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
   
   /**
-   * Get the <code>maxResponseRate</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#maxResponseRate
+   * Get the <code>MaxResponseRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#MaxResponseRate
    */
-  public BStatusNumeric getMaxResponseRate() { return (BStatusNumeric)get(maxResponseRate); }
+  public BStatusNumeric getMaxResponseRate() { return (BStatusNumeric)get(MaxResponseRate); }
   
   /**
-   * Set the <code>maxResponseRate</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#maxResponseRate
+   * Set the <code>MaxResponseRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#MaxResponseRate
    */
-  public void setMaxResponseRate(BStatusNumeric v) { set(maxResponseRate,v,null); }
+  public void setMaxResponseRate(BStatusNumeric v) { set(MaxResponseRate,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "trimRate"
+// Property "TrimRate"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>trimRate</code> property.
+   * Slot for the <code>TrimRate</code> property.
    * @see com.vitek.tridium.ax.BFanPressureReset#getTrimRate
    * @see com.vitek.tridium.ax.BFanPressureReset#setTrimRate
    */
-  public static final Property trimRate = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
+  public static final Property TrimRate = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
   
   /**
-   * Get the <code>trimRate</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#trimRate
+   * Get the <code>TrimRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#TrimRate
    */
-  public BStatusNumeric getTrimRate() { return (BStatusNumeric)get(trimRate); }
+  public BStatusNumeric getTrimRate() { return (BStatusNumeric)get(TrimRate); }
   
   /**
-   * Set the <code>trimRate</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#trimRate
+   * Set the <code>TrimRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#TrimRate
    */
-  public void setTrimRate(BStatusNumeric v) { set(trimRate,v,null); }
+  public void setTrimRate(BStatusNumeric v) { set(TrimRate,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "enable"
+// Property "ResponseDamperPosition"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>enable</code> property.
+   * Slot for the <code>ResponseDamperPosition</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getResponseDamperPosition
+   * @see com.vitek.tridium.ax.BFanPressureReset#setResponseDamperPosition
+   */
+  public static final Property ResponseDamperPosition = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("percent"), 4));
+  
+  /**
+   * Get the <code>ResponseDamperPosition</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#ResponseDamperPosition
+   */
+  public BStatusNumeric getResponseDamperPosition() { return (BStatusNumeric)get(ResponseDamperPosition); }
+  
+  /**
+   * Set the <code>ResponseDamperPosition</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#ResponseDamperPosition
+   */
+  public void setResponseDamperPosition(BStatusNumeric v) { set(ResponseDamperPosition,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "TrimDamperPosition"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>TrimDamperPosition</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getTrimDamperPosition
+   * @see com.vitek.tridium.ax.BFanPressureReset#setTrimDamperPosition
+   */
+  public static final Property TrimDamperPosition = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("percent"), 4));
+  
+  /**
+   * Get the <code>TrimDamperPosition</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#TrimDamperPosition
+   */
+  public BStatusNumeric getTrimDamperPosition() { return (BStatusNumeric)get(TrimDamperPosition); }
+  
+  /**
+   * Set the <code>TrimDamperPosition</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#TrimDamperPosition
+   */
+  public void setTrimDamperPosition(BStatusNumeric v) { set(TrimDamperPosition,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "RequestsRequiredToRespond"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>RequestsRequiredToRespond</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getRequestsRequiredToRespond
+   * @see com.vitek.tridium.ax.BFanPressureReset#setRequestsRequiredToRespond
+   */
+  public static final Property RequestsRequiredToRespond = newProperty(Flags.SUMMARY, new BStatusNumeric(),null);
+  
+  /**
+   * Get the <code>RequestsRequiredToRespond</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#RequestsRequiredToRespond
+   */
+  public BStatusNumeric getRequestsRequiredToRespond() { return (BStatusNumeric)get(RequestsRequiredToRespond); }
+  
+  /**
+   * Set the <code>RequestsRequiredToRespond</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#RequestsRequiredToRespond
+   */
+  public void setRequestsRequiredToRespond(BStatusNumeric v) { set(RequestsRequiredToRespond,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "NoOfZones"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>NoOfZones</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getNoOfZones
+   * @see com.vitek.tridium.ax.BFanPressureReset#setNoOfZones
+   */
+  public static final Property NoOfZones = newProperty(Flags.SUMMARY, ((BDouble)(BDouble.make(0.0))).getDouble(),null);
+  
+  /**
+   * Get the <code>NoOfZones</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#NoOfZones
+   */
+  public double getNoOfZones() { return getDouble(NoOfZones); }
+  
+  /**
+   * Set the <code>NoOfZones</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#NoOfZones
+   */
+  public void setNoOfZones(double v) { setDouble(NoOfZones,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "Enable"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>Enable</code> property.
    * @see com.vitek.tridium.ax.BFanPressureReset#getEnable
    * @see com.vitek.tridium.ax.BFanPressureReset#setEnable
    */
-  public static final Property enable = newProperty(0, new BStatusBoolean(),BFacets.makeBoolean("true", "false"));
+  public static final Property Enable = newProperty(Flags.SUMMARY, ((BBoolean)(BBoolean.make("false"))).getBoolean(),BFacets.makeBoolean("true", "false"));
   
   /**
-   * Get the <code>enable</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#enable
+   * Get the <code>Enable</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#Enable
    */
-  public BStatusBoolean getEnable() { return (BStatusBoolean)get(enable); }
+  public boolean getEnable() { return getBoolean(Enable); }
   
   /**
-   * Set the <code>enable</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#enable
+   * Set the <code>Enable</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#Enable
    */
-  public void setEnable(BStatusBoolean v) { set(enable,v,null); }
+  public void setEnable(boolean v) { setBoolean(Enable,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "fanProof"
+// Property "UseTrimDeadband"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>fanProof</code> property.
+   * Slot for the <code>UseTrimDeadband</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getUseTrimDeadband
+   * @see com.vitek.tridium.ax.BFanPressureReset#setUseTrimDeadband
+   */
+  public static final Property UseTrimDeadband = newProperty(Flags.SUMMARY, ((BBoolean)(BBoolean.make("false"))).getBoolean(),null);
+  
+  /**
+   * Get the <code>UseTrimDeadband</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#UseTrimDeadband
+   */
+  public boolean getUseTrimDeadband() { return getBoolean(UseTrimDeadband); }
+  
+  /**
+   * Set the <code>UseTrimDeadband</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#UseTrimDeadband
+   */
+  public void setUseTrimDeadband(boolean v) { setBoolean(UseTrimDeadband,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "FanProof"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>FanProof</code> property.
    * @see com.vitek.tridium.ax.BFanPressureReset#getFanProof
    * @see com.vitek.tridium.ax.BFanPressureReset#setFanProof
    */
-  public static final Property fanProof = newProperty(Flags.SUMMARY, new BStatusBoolean(),BFacets.makeBoolean("true", "false"));
+  public static final Property FanProof = newProperty(Flags.SUMMARY, new BStatusBoolean(),BFacets.makeBoolean("true", "false"));
   
   /**
-   * Get the <code>fanProof</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#fanProof
+   * Get the <code>FanProof</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#FanProof
    */
-  public BStatusBoolean getFanProof() { return (BStatusBoolean)get(fanProof); }
+  public BStatusBoolean getFanProof() { return (BStatusBoolean)get(FanProof); }
   
   /**
-   * Set the <code>fanProof</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#fanProof
+   * Set the <code>FanProof</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#FanProof
    */
-  public void setFanProof(BStatusBoolean v) { set(fanProof,v,null); }
+  public void setFanProof(BStatusBoolean v) { set(FanProof,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "zoneRequest"
+// Property "ActiveZoneRequests"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>zoneRequest</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#getZoneRequest
-   * @see com.vitek.tridium.ax.BFanPressureReset#setZoneRequest
+   * Slot for the <code>ActiveZoneRequests</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getActiveZoneRequests
+   * @see com.vitek.tridium.ax.BFanPressureReset#setActiveZoneRequests
    */
-  public static final Property zoneRequest = newProperty(Flags.SUMMARY, new BStatusNumeric(),null);
+  public static final Property ActiveZoneRequests = newProperty(Flags.SUMMARY, new BStatusNumeric(),null);
   
   /**
-   * Get the <code>zoneRequest</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#zoneRequest
+   * Get the <code>ActiveZoneRequests</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#ActiveZoneRequests
    */
-  public BStatusNumeric getZoneRequest() { return (BStatusNumeric)get(zoneRequest); }
+  public BStatusNumeric getActiveZoneRequests() { return (BStatusNumeric)get(ActiveZoneRequests); }
   
   /**
-   * Set the <code>zoneRequest</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#zoneRequest
+   * Set the <code>ActiveZoneRequests</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#ActiveZoneRequests
    */
-  public void setZoneRequest(BStatusNumeric v) { set(zoneRequest,v,null); }
+  public void setActiveZoneRequests(BStatusNumeric v) { set(ActiveZoneRequests,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "asyncHandler"
+// Property "ActiveTrimRequests"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>asyncHandler</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#getAsyncHandler
-   * @see com.vitek.tridium.ax.BFanPressureReset#setAsyncHandler
+   * Slot for the <code>ActiveTrimRequests</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getActiveTrimRequests
+   * @see com.vitek.tridium.ax.BFanPressureReset#setActiveTrimRequests
    */
-  public static final Property asyncHandler = newProperty(0, new BDemoWorker(),null);
+  public static final Property ActiveTrimRequests = newProperty(0, ((BDouble)(BDouble.make(0))).getDouble(),null);
   
   /**
-   * Get the <code>asyncHandler</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#asyncHandler
+   * Get the <code>ActiveTrimRequests</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#ActiveTrimRequests
    */
-  public BDemoWorker getAsyncHandler() { return (BDemoWorker)get(asyncHandler); }
+  public double getActiveTrimRequests() { return getDouble(ActiveTrimRequests); }
   
   /**
-   * Set the <code>asyncHandler</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#asyncHandler
+   * Set the <code>ActiveTrimRequests</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#ActiveTrimRequests
    */
-  public void setAsyncHandler(BDemoWorker v) { set(asyncHandler,v,null); }
+  public void setActiveTrimRequests(double v) { setDouble(ActiveTrimRequests,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "out"
+// Property "ActiveResponseRate"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>out</code> property.
+   * Slot for the <code>ActiveResponseRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getActiveResponseRate
+   * @see com.vitek.tridium.ax.BFanPressureReset#setActiveResponseRate
+   */
+  public static final Property ActiveResponseRate = newProperty(Flags.SUMMARY|Flags.READONLY, new BStatusNumeric(),BFacets.makeNumeric(BUnit.getUnit("inches of water"), 4));
+  
+  /**
+   * Get the <code>ActiveResponseRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#ActiveResponseRate
+   */
+  public BStatusNumeric getActiveResponseRate() { return (BStatusNumeric)get(ActiveResponseRate); }
+  
+  /**
+   * Set the <code>ActiveResponseRate</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#ActiveResponseRate
+   */
+  public void setActiveResponseRate(BStatusNumeric v) { set(ActiveResponseRate,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "Out"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>Out</code> property.
    * @see com.vitek.tridium.ax.BFanPressureReset#getOut
    * @see com.vitek.tridium.ax.BFanPressureReset#setOut
    */
-  public static final Property out = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric( BUnit.getUnit("inches of water"), 4));
+  public static final Property Out = newProperty(Flags.SUMMARY, new BStatusNumeric(),BFacets.makeNumeric( BUnit.getUnit("inches of water"), 4));
   
   /**
-   * Get the <code>out</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#out
+   * Get the <code>Out</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#Out
    */
-  public BStatusNumeric getOut() { return (BStatusNumeric)get(out); }
+  public BStatusNumeric getOut() { return (BStatusNumeric)get(Out); }
   
   /**
-   * Set the <code>out</code> property.
-   * @see com.vitek.tridium.ax.BFanPressureReset#out
+   * Set the <code>Out</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#Out
    */
-  public void setOut(BStatusNumeric v) { set(out,v,null); }
+  public void setOut(BStatusNumeric v) { set(Out,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "AsyncHandler"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>AsyncHandler</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#getAsyncHandler
+   * @see com.vitek.tridium.ax.BFanPressureReset#setAsyncHandler
+   */
+  public static final Property AsyncHandler = newProperty(Flags.HIDDEN, new BDemoWorker(),null);
+  
+  /**
+   * Get the <code>AsyncHandler</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#AsyncHandler
+   */
+  public BDemoWorker getAsyncHandler() { return (BDemoWorker)get(AsyncHandler); }
+  
+  /**
+   * Set the <code>AsyncHandler</code> property.
+   * @see com.vitek.tridium.ax.BFanPressureReset#AsyncHandler
+   */
+  public void setAsyncHandler(BDemoWorker v) { set(AsyncHandler,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "addZone"
@@ -370,7 +675,7 @@ public class BFanPressureReset
    * Slot for the <code>addZone</code> action.
    * @see com.vitek.tridium.ax.BFanPressureReset#addZone()
    */
-  public static final Action addZone = newAction(Flags.ASYNC,null);
+  public static final Action addZone = newAction(0,null);
   
   /**
    * Invoke the <code>addZone</code> action.
@@ -386,7 +691,7 @@ public class BFanPressureReset
    * Slot for the <code>removeZone</code> action.
    * @see com.vitek.tridium.ax.BFanPressureReset#removeZone()
    */
-  public static final Action removeZone = newAction(Flags.ASYNC,BString.make("zoneName"),null);
+  public static final Action removeZone = newAction(0,BString.make("zoneName"),null);
   
   /**
    * Invoke the <code>removeZone</code> action.
@@ -395,20 +700,36 @@ public class BFanPressureReset
   public void removeZone(BString name) { invoke(removeZone,name,null); }
 
 ////////////////////////////////////////////////////////////////
-// Action "loopEnable"
+// Action "batchZones"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>loopEnable</code> action.
-   * @see com.vitek.tridium.ax.BFanPressureReset#loopEnable()
+   * Slot for the <code>batchZones</code> action.
+   * @see com.vitek.tridium.ax.BFanPressureReset#batchZones()
    */
-  public static final Action loopEnable = newAction(Flags.ASYNC,null);
+  public static final Action batchZones = newAction(0,null);
   
   /**
-   * Invoke the <code>loopEnable</code> action.
-   * @see com.vitek.tridium.ax.BFanPressureReset#loopEnable
+   * Invoke the <code>batchZones</code> action.
+   * @see com.vitek.tridium.ax.BFanPressureReset#batchZones
    */
-  public void loopEnable() { invoke(loopEnable,null,null); }
+  public void batchZones() { invoke(batchZones,null,null); }
+
+////////////////////////////////////////////////////////////////
+// Action "enable"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>enable</code> action.
+   * @see com.vitek.tridium.ax.BFanPressureReset#enable()
+   */
+  public static final Action enable = newAction(0,null);
+  
+  /**
+   * Invoke the <code>enable</code> action.
+   * @see com.vitek.tridium.ax.BFanPressureReset#enable
+   */
+  public void enable() { invoke(enable,null,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "countRequest"
@@ -424,7 +745,7 @@ public class BFanPressureReset
    * Invoke the <code>countRequest</code> action.
    * @see com.vitek.tridium.ax.BFanPressureReset#countRequest
    */
-  public BStatusNumeric countRequest() { return (BStatusNumeric)invoke(countRequest,null,null); }
+  public void countRequest() { invoke(countRequest,null,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "makeList"
@@ -491,6 +812,22 @@ public class BFanPressureReset
   public void run() { invoke(run,null,null); }
 
 ////////////////////////////////////////////////////////////////
+// Topic "RogueZoneEvent"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>RogueZoneEvent</code> topic.
+   * @see com.vitek.tridium.ax.BFanPressureReset#fireRogueZoneEvent
+   */
+  public static final Topic RogueZoneEvent = newTopic(0,null);
+  
+  /**
+   * Fire an event for the <code>RogueZoneEvent</code> topic.
+   * @see com.vitek.tridium.ax.BFanPressureReset#RogueZoneEvent
+   */
+  public void fireRogueZoneEvent(BString event) { fire(RogueZoneEvent, event, null); }
+
+////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
@@ -501,117 +838,89 @@ public class BFanPressureReset
 
   
 //FIELDS
-private ArrayList list = new ArrayList(100);
-private String baseName = "zoneDamperPos_";
-//private BString removeString = BString.make(baseName + (list.size()-1));
-private Ticket ticket = null;
+ private ArrayList list = new ArrayList(100);
+ private String baseName = "zdp";
+ private Ticket ticket = null;
 
 //SYSTEM CALLBACKS
-public void atSteadyState()throws Exception
-{
-  super.atSteadyState();
-  
-  ticket = Clock.schedulePeriodically(this.asComponent(), BRelTime.MINUTE, this.getAction("run"), null);
-  
-  
-  getOut().setValue(getMinStaticPressure_Stp().getValue());
-  
-  this.doInvoke(getAction("makeList"), null, null);
-  this.doInvoke(getAction("countRequest"), null, null);
-  
-  if(!this.isRunning())
-  {
-    ticket.cancel();
-  }
+ public void atSteadyState()throws Exception
+ {
+   super.atSteadyState();
 
-}
+   getOut().setValue(getMinStaticPressure_Stp().getValue()); 
+   this.doInvoke(getAction("makeList"), null, null);
+   this.doInvoke(getAction("countRequest"), null, null);
+   ticket = Clock.schedulePeriodically(this.asComponent(), getExecutionRate(), this.getAction("run"), null);   
+
+ }
 
 
 //PROPERTY CALLBACKS
-public void changed(Property prop, Context cx)
-{
-  super.changed(prop, cx);
-  //Fire updateArray and CountRequest if a zone damper position property changes
 
-  boolean isZone = false;
-  Property[] dyProps = this.getDynamicPropertiesArray();
+ public void added(Property prop, Context cx)
+ {
+   super.added(prop, cx); 
+
+   if(!this.isRunning()) return;
+   if(!Sys.atSteadyState()) return;
+   
+   doDebug("New Dynamic Prop added...");
+   
+   if(prop.getName().startsWith(baseName))
+   {
+     this.doInvoke(makeList, null, null);
+     this.doInvoke(this.getAction("countRequest"), null, null);
+   }
   
-  if(!this.isRunning()) return;
-  if(!Sys.atSteadyState()) return;
-  for(int i = 0; i < dyProps.length; i++)
+   else
+   {
+     Property[] dyProps = this.getDynamicPropertiesArray();
+    
+     if(!this.isRunning()) return;
+     if(!Sys.atSteadyState()) return;
+     for(int i = 0; i < dyProps.length; i++)
+     {
+       Slot s = (Slot)dyProps[i];
+       if(prop == (Property)s)
+       {
+         if(s.getName().startsWith("Link"))
+         {
+           
+           String target = (((BLink) ((BObject)get((Property)prop))).getTargetSlotName()); 
+           String source = (((BLink) ((BObject)get((Property)prop))).getSourceComponent().getNavParent().getNavParent().getNavName() + "_" + 
+                             ((BLink) ((BObject)get((Property)prop))).getSourceComponent().getName());
+
+           doDebug("ZONE TARGET: " + target);
+           doDebug("ZONE SOURCE: " + source);
+         }      
+       }
+     }
+   }
+ }
+
+  public void removed(Property prop, BValue val, Context cx)throws ConcurrentModificationException
   {
-    Slot s = (Slot)dyProps[i];
-    if(s.getName().startsWith(baseName))
-    {
-      if(prop == (Property)s)
-      {
-        this.doInvoke(makeList, null, null);
-        this.doInvoke(this.getAction("countRequest"), null, null);
-        scaleRespRate();
-        System.out.print("In .changed(), call method scaleRespRate()");
-      }
-    }
-  }
-  if(isZone == true)
-  {
-    System.out.println("In .changed(), isOfInterest is "+ isZone);
-  }  
-}
+   super.removed( prop, val, cx);
 
-public void added(Property prop, Context cx)
-{
-  super.added(prop, cx);
-  //Fire doCountRequest if a zone damper slot is created, and push it into the zones array 
-
-  if(!this.isRunning()) return;
-  if(!Sys.atSteadyState()) return;
-  
-  boolean isZone = false;
-  
-    if(prop.getName().startsWith(baseName))
-    {
-      this.doInvoke(makeList, null, null);
-      this.doInvoke(this.getAction("countRequest"), null, null);
-      isZone = true;
-    }
-  if(isZone == true)
-  {
-    System.out.println("In .changed(), isOfInterest is "+ isZone);
-  }
-}
-
-public void removed(Property prop, BValue val, Context cx)
-{
-  super.removed( prop, val, cx);
-  //Fire doCountRequest if a zone damper slot is removed, then remove the slot object by making a remove call to the running instance of such object, also 
-  //remove the corresponding element of the list of zones. Finally, call the class utility methods
-
-  boolean isZone = false;
-  
-  if(!this.isRunning()) return;
-  if(!Sys.atSteadyState()) return;
-  
-      if(prop.getName().startsWith(baseName))
-      {
-        this.doInvoke(makeList, null, null);
-        this.doInvoke(this.getAction("countRequest"), null, null);
-      }
-  if(isZone == true)
-  {
-    System.out.println("In .removed(), isOfInterest is "+ isZone);
-  }    
-}
+   if(!this.isRunning()) return;
+   if(!Sys.atSteadyState()) return;
+   
+   if(prop.getName().startsWith(baseName))
+     { 
+       doDebug("Zone removed from array of zones");
+     }  
+   }
 
 
-//ACTION CALLBACKS
+//ACTION METHOD CALLS
   public void doAddZone()
   {
     //Add a dynamic slot zone damper position property
 
     BString nameString = BString.make( baseName + list.size());
-    BFacets unitFacets = BFacets.makeNumeric(BUnit.getUnit("percent"),2);
+    BFacets unitFacets = BFacets.makeNumeric(BUnit.getUnit("percent"),1);
 
-    System.out.println("In.doAddZone, list.size  "+ list.size());
+    doDebug("In.doAddZone, list.size  "+ list.size());
   
     this.add(nameString.getString(), BDouble.make(0.0), Flags.SUMMARY, unitFacets);
     //Create method var of type BString to name the new slot; to do so, concatenate the string in instance var "baseName" with the current size of the "list" instance var
@@ -621,101 +930,111 @@ public void removed(Property prop, BValue val, Context cx)
   {
     String name = removeString.getString();
     this.remove(name);
-    //Pass a BString as an argument to this method which will be the name of the dynamic slot to be removed.
-  }
-  
-  public void doLoopEnable()
-  {
     
-    if(getEnable().getValue() == true)
+    for(ListIterator it = list.listIterator(); it.hasNext();)
     {
-      getEnable().setValue(false);
-      getOut().setValue(0.0);
+      String propName = ((Property)it.next()).getName();
+      doDebug("it.Next: "+ propName);
+      doDebug("it.NextIndex: "+it.nextIndex());
+      doDebug("it.PreviousIndex: "+it.previousIndex());
+      
+      if(name.equalsIgnoreCase(propName))
+      {
+        list.remove(it.previousIndex());
+        doDebug("Removed zone from array list: "+ propName +" at index "+it.previousIndex());
+      }
+    }
+  }
+ 
+  public void doEnable()
+  {
+    if(getEnable())
+    {
+      setEnable(false);
+      ticket.cancel();
+      getOut().setValue(getDefaultSetpoint().getValue());
     }
     else
     {
-      getEnable().setValue(true); 
-    }       
-    //Sets the "enable" property on and off    
-   } 
-   
+      setEnable(true);
+      getOut().setValue(getDefaultSetpoint().getValue());
+      this.doInvoke(makeList, null, null);
+      this.doInvoke(countRequest, null, null);
+      ticket = Clock.schedulePeriodically(this.asComponent(), getExecutionRate(), this.getAction("run"), null);
+    }    
+  }
+  
   public void doMakeList()
   { 
     Property[] dyProps = this.getDynamicPropertiesArray();
     //Assign an array of all dynamic properties to the method var "dyProps"
   
-    System.out.println("In.doMakeList(), Dynamic Props   "+ dyProps.length);
-    System.out.println("In.doMakeList(), List.size  "+ list.size());
+    doDebug("In.doMakeList(), Dynamic Props   "+ dyProps.length);
+    doDebug("In.doMakeList(), List.size  "+ list.size());
 
     for(int i = 0; i < dyProps.length; i++)
     {
       Slot s = (Slot)dyProps[i];
       //Cast every dynamic property in dyProps to Slot type, then assign it to the loop var "s" of type Slot
-      System.out.println("In.doMakeList(), in ForLoop, just before if Statement. dyProp element has just been casted to Slot type and assigned to s var  "+ s.getName());
-      System.out.println("In .doMakeList(), in ForLoop, just befor if Statement. list.size  "+ list.size());
+      doDebug("In.doMakeList(), in ForLoop, just before if Statement. dyProp element has just been casted to Slot type and assigned to s var  "+ s.getName());
+      doDebug("In .doMakeList(), in ForLoop, just befor if Statement. list.size  "+ list.size());
       
       if(s.getName().startsWith(baseName) && !list.contains(s)){
         list.add((Property)s);
-        System.out.println("In .doMakeList(), in ForLoop just after the list.add(Property s) Statement.   list.size  "+ list.size());
+        doDebug("In .doMakeList(), in ForLoop just after the list.add(Property s) Statement.   list.size  "+ list.size());
         //if the name of s starts with the instance var "baseName" of type String AND IS NOT an Object already CONTAINED in the list; then add it to
         //the List instance var "list".
-        System.out.println("In .doMakeList(), in FoorLoop, after the list.add(Property s) Statement.  Found zone damper dynamic slot s  "+s);
+        doDebug("In .doMakeList(), in FoorLoop, after the list.add(Property s) Statement.  Found zone damper dynamic slot s  "+s);
       } 
       else
       {
-        System.out.println("In .doMakeList(), in ForLoop, in else Statement; this dynamic property is not a zone damper slot. List.size is  "+ list.size());
+        doDebug("In .doMakeList(), in ForLoop, in else Statement; this dynamic property is not a zone damper slot. List.size is  "+ list.size());
         
       }
      }
    }
 
-  public BStatusNumeric doCountRequest()
+  public void doCountRequest()
   {
  
     double zprCount = 0;  
     BStatusNumeric zprOut = new BStatusNumeric((double)zprCount);
     
-    System.out.println("List size: "+ list.size());
+    doDebug("List size: "+ list.size());
   
     ListIterator it = list.listIterator(list.size());
-    BDouble constant = BDouble.make(90.0);
     
     while(it.hasPrevious()){
       BDouble zdp = (BDouble)((BObject)get((Property)it.previous()));
-      if(zdp.getDouble() >= constant.getDouble()){
+      if(zdp.getDouble() >= this.getResponseDamperPosition().getValue()){
         zprCount = zprCount + 1;
       }
-      System.out.println("zdp name:  " + zdp.toString());
+      doDebug("zdp value:  " + zdp.toString());
      }
     zprOut.setValue(zprCount);
-    setZoneRequest(zprOut);
+    setActiveZoneRequests(zprOut);
     
-    //Make a BDouble, and a List Iterator for "list"; while the iterator can obtain a list item; make a BDouble loop var named "zdp".
-    //cast the current item in the iterator's queue to a Property type, pass it to the .get() method of the current instance of this class.
-    //The value returned by the afore mentioned .get() method is then upcasted to a BObject and then downcasted to a BDouble; it is then assigned to loop var "zdp"
-    //if zdp's double value is currently higher or equal to then constant double value, then add one to the zprCount var's value.
-    //In the end set the property object zoneRequest with the value of zprCount, and return zprCount in case I want to use a copy of it's value for something later on.
+    if(this.getUseTrimDeadband()){ countTrimRequests(); }
     
-    System.out.println("Zone Pressure Request Count:"+ zprCount);  
-     System.out.println("zpr count method output: "+ zprOut.toString());
-     return zprOut; 
+    doDebug("Zone Pressure Request Count:"+ zprCount);  
+    doDebug("zpr count method output: "+ zprOut.toString()); 
   }
   
   public void doTrim()
   {
     double out = getOut().getValue(); 
-    BStatusNumeric trimRate = (BStatusNumeric)(BObject)get(this.getProperty("trimRate"));
-    BStatusNumeric minStp = (BStatusNumeric)(BObject)get(this.getProperty("minStaticPressure_Stp"));
+    BStatusNumeric TrimRate = (BStatusNumeric)(BObject)get(this.getProperty("TrimRate"));
+    BStatusNumeric minStp = (BStatusNumeric)(BObject)get(this.getProperty("MinStaticPressure_Stp"));
     
-    System.out.println("In .doTrim(), minStp = "+minStp.getValue());
-    System.out.println("In .doTrim(), trimRate = "+trimRate);
-    System.out.println("In .doTrim(), out = "+ out);
+    doDebug("In .doTrim(), minStp = "+minStp.getValue());
+    doDebug("In .doTrim(), TrimRate = "+TrimRate);
+    doDebug("In .doTrim(), out = "+ out);
     
     if(out > minStp.getValue())
     {  
-      out = out - trimRate.getValue();
+      out = out - TrimRate.getValue();
       getOut().setValue(out);
-      System.out.println("In .doTrim, final output: "+ out);
+      doDebug("In .doTrim, final output: "+ out);
     }
     else
     {
@@ -726,18 +1045,18 @@ public void removed(Property prop, BValue val, Context cx)
   public void doRespond()
   {   
     double out = getOut().getValue();
-    BStatusNumeric respRate = (BStatusNumeric)(BObject)get(this.getProperty("active_responseRate"));
-    BStatusNumeric maxStp = (BStatusNumeric)(BObject)get(this.getProperty("maxStaticPressure_Stp"));
+    BStatusNumeric respRate = (BStatusNumeric)(BObject)get(this.getProperty("ActiveResponseRate"));
+    BStatusNumeric maxStp = (BStatusNumeric)(BObject)get(this.getProperty("MaxStaticPressure_Stp"));
     
-    System.out.println("In .doRespond(), maxStp = "+maxStp);
-    System.out.println("In .doRespond(), respRate = "+respRate);
-    System.out.println("In .doRespond(), out = "+ out);
+    doDebug("In .doRespond(), maxStp = "+maxStp);
+    doDebug("In .doRespond(), respRate = "+respRate);
+    doDebug("In .doRespond(), out = "+ out);
     
     if(out < maxStp.getValue())
     {
-      out = out + respRate.getValue();
+      out = out + scaleRespRate();
       getOut().setValue(out);
-      System.out.println("In .doRespond, final method output: "+ out);
+      doDebug("In .doRespond, final method output: "+ out);
     }
     else
     {
@@ -745,21 +1064,29 @@ public void removed(Property prop, BValue val, Context cx)
     }
   }
   
-  public void doRun()
+  public void doRun() throws IOException
   {
-    if(this.getEnable().getValue() == true && this.getFanProof().getValue()== true)
+    if(this.getEnable() && this.getFanProof().getValue()== true)
     {
-      if(this.getZoneRequest().getValue() > 0)
+      this.doInvoke(makeList, null, null);
+      this.doInvoke(countRequest, null, null);
+      this.setNoOfZones((double)list.size());
+      
+      if(this.getActiveZoneRequests().getValue() >= this.getRequestsRequiredToRespond().getValue())
       {
         this.doInvoke(getAction("respond"), null, null);
-        System.out.println("In .doRun, call the respond action, there is  "+ getZoneRequest().getValue()+ " zone pressure requests");
-        System.out.println("In .doRun, getOut().getValue()"+ getOut().getValue());
+        doDebug("In .doRun, call the respond action, there is  "+ getActiveZoneRequests().getValue()+ " zone pressure requests");
+        doDebug("In .doRun, getOut().getValue()"+ getOut().getValue());
       }
       else
       {
-        this.doInvoke(getAction("trim"),null,null);
-        System.out.println("In .doRun, call the trim action, there is  "+ getZoneRequest().getValue()+ " zone pressure requests");  
-        System.out.println("In .doRun, getOut().getValue()"+ getOut().getValue());
+        if(!this.getUseTrimDeadband())
+        {
+          this.doInvoke(getAction("trim"),null,null);
+          doDebug("In .doRun, call the trim action, there is  "+ getActiveZoneRequests().getValue()+ " zone pressure requests");  
+          doDebug("In .doRun, getOut().getValue()"+ getOut().getValue());          
+        }
+        else{}
       }
     }
   }
@@ -779,25 +1106,71 @@ public void removed(Property prop, BValue val, Context cx)
   {
     double outputResponse = 0.0;
     BStatusNumeric output = new BStatusNumeric((double)outputResponse);    
-    BStatusNumeric minRate = (BStatusNumeric)(BObject)get(this.getProperty("minResponseRate"));
-    BStatusNumeric maxRate = (BStatusNumeric)(BObject)get(this.getProperty("maxResponseRate"));
+    BStatusNumeric minRate = (BStatusNumeric)(BObject)get(this.getProperty("MinResponseRate"));
+    BStatusNumeric maxRate = (BStatusNumeric)(BObject)get(this.getProperty("MaxResponseRate"));
     double maxZpr = (double)list.size();
     double minZpr = 1.0;
-    double zprCount = this.getZoneRequest().getValue();
+    double zprCount = this.getActiveZoneRequests().getValue();
 
+    doDebug("maxZpr: "+ maxZpr);
+    doDebug("maxRate: "+ maxRate.getValue());
+    doDebug("minRate: "+ minRate.getValue());
     
-    System.out.println("maxZpr: "+ maxZpr);
-    System.out.println("maxRate: "+ maxRate.getValue());
-    System.out.println("minRate: "+ minRate.getValue());
+    if(maxRate.getValue() == minRate.getValue())
+    {
+      outputResponse = maxRate.getValue();
+    }
+    else
+    {
+      outputResponse = ((maxRate.getValue()-minRate.getValue())*(zprCount - minRate.getValue()))/ ((maxZpr - minZpr)+ minRate.getValue());      
+    }    
     
-    outputResponse = ((maxRate.getValue()-minRate.getValue())*(zprCount - minRate.getValue()))/ ((maxZpr - minZpr)+ minRate.getValue());
-    System.out.println("In scaleRespRate, outputResponse of type double holds the result of a mathematical expression;  "+ outputResponse);
+    doDebug("In scaleRespRate, outputResponse of type double holds the result of a mathematical expression;  "+ outputResponse);
     
     output.setValue(outputResponse);
-    System.out.println("In scaledRespRate(), output var of type BStatusNumeric is set to the value held in var output;  " + outputResponse);
-    setActive_responseRate(output);
+    doDebug("In scaledRespRate(), output var of type BStatusNumeric is set to the value held in var output;  " + outputResponse);
+    this.setActiveResponseRate(output);
     return outputResponse;
     
+  }
+  
+  public void countTrimRequests()
+  {
+    double ztrCount = 0;  
+    
+    doDebug("List size: "+ list.size());
+  
+    ListIterator it = list.listIterator(list.size());
+    
+    while(it.hasPrevious()){
+      BDouble zdp = (BDouble)((BObject)get((Property)it.previous()));
+      if(zdp.getDouble() <= this.getTrimDamperPosition().getValue()){
+        ztrCount = ztrCount + 1;
+      }
+      doDebug(" In countTrimRequests()...zdp value:  " + zdp.toString());
+     }
+    
+    if(ztrCount >= this.getRequestsRequiredToRespond().getValue() && this.getActiveZoneRequests().getValue() <= this.getRequestsRequiredToRespond().getValue())
+    {
+      this.doInvoke(trim, null, null);
+    }
+    
+    this.setActiveTrimRequests(ztrCount);
+    doDebug("Zone Pressure Request Count:"+ ztrCount);       
+  }
+  
+  public void doDebug(String debugOutput)
+  {
+    if(this.getDebug()){ System.out.println(debugOutput); }    
+  }
+  
+  public void doBatchZones()
+  {
+    int ZoneQty = (int)this.getNoOfZones();
+    for(int i = 0; i < ZoneQty; i++)
+    {
+      this.invoke(addZone, null, null);
+    }
   }
   
   ///CLASS DECLARATION END

@@ -7,4 +7,7 @@
   -->
   <type name="FanPressureReset" class="com.vitek.tridium.ax.BFanPressureReset"/>
   <type name="DemoWorker" class="com.vitek.tridium.ax.BDemoWorker"/>
+  <type name="LeadLagControl" class="com.vitek.tridium.ax.BLeadLagControl"/>
+  <type name="LeadLagRotationControl" class="com.vitek.tridium.ax.Enums.BLeadLagRotationControl"/>
+  <type name="LeadLagRotationType" class="com.vitek.tridium.ax.Enums.BLeadLagRotationType"/>
 </types>
